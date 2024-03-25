@@ -1,26 +1,23 @@
 const express = require("express");
-const { Users } = require("../modal/user");
+const { Users } = require("../models/user");
 
 const router = express.Router();
 
 router.get("/", async (req, res) => {
-  //   console.log("running");
-  const users = await Users.find();
-  if (!users) {
-    console.log("users: ", users);
+  const userList = await Users.find().select("-__v");
+  if (!userList) {
     res.send(500).json({ message: "something is wrong" });
   }
-  res.send(users);
+  res.send(userList);
 });
 
 router.post("/", async (req, res) => {
-  console.log("req: ", req.body);
-  const users = new Users({
+  const user = new Users({
     name: req.body.name,
   });
-  await users.save();
-  if (users) {
-    res.json(users);
+  const userAdd = await user.save();
+  if (userAdd) {
+    res.json(userAdd);
   }
   res.status(500).json({ message: "Some error" });
 });

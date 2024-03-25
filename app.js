@@ -4,6 +4,8 @@ const bodyparser = require("body-parser");
 const mongoose = require("mongoose");
 const morgan = require("morgan");
 const UserRouter = require("./routes/user");
+const ProductRouter = require("./routes/product");
+const CategoryRouter = require("./routes/category");
 require("dotenv/config");
 
 // middle ware
@@ -12,6 +14,8 @@ app.use(morgan("tiny"));
 
 //Routing define
 app.use("/user", UserRouter);
+app.use("/product", ProductRouter);
+app.use("/category", CategoryRouter);
 
 databaseConect()
   .then(() => console.log("database connected"))

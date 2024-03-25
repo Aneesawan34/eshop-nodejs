@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 // will be update this schema proper
-const UserSchema = mongoose.Schema({
+const UserSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
