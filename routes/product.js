@@ -15,6 +15,17 @@ Router.get("/", async (req, res) => {
   res.status(200).send(productList);
 });
 
+Router.get("/:id", async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({ success: false, message: "Id is not valid" });
+  }
+  const productItem = await Product.findById(req.params.id);
+  if (!productItem) {
+    res.status(400).json({ succes: false, message: "id is not found" });
+  }
+  res.status(200).send(productItem);
+});
+
 Router.post("/", async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(req.body.category)) {
     return res.status(400).json({ success: false, message: "Id is not valid" });
@@ -42,7 +53,58 @@ Router.post("/", async (req, res) => {
   res.status(200).json(productAdd);
 });
 
-Router.get("/getcount", async (req, res) => {
+Router.delete("/:id", async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({ success: false, message: "Id is not valid" });
+  }
+
+  const prodcutItem = await Product.findByIdAndDelete(req.params.id);
+  if (!prodcutItem) {
+    res.status(400).json({ succes: false, message: "id is not found" });
+  }
+  res
+    .status(200)
+    .send({ success: true, message: "product deleted succesfully" });
+});
+
+Router.put("/:id", async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({ success: false, message: "Id is not valid" });
+  }
+  if (!mongoose.Types.ObjectId.isValid(req.body.category)) {
+    return res
+      .status(400)
+      .json({ success: false, message: "category Id is not valid" });
+  }
+  const category = await Category.findById(req.body.category);
+  if (!category)
+    return res
+      .status(400)
+      .json({ success: false, message: "Category id not found" });
+
+  const prodcutItemUpdate = await Product.findByIdAndUpdate(
+    req.params.id,
+    {
+      name: req.body.name,
+      discription: req.body.discription,
+      brand: req.body.brand,
+      price: req.body.price,
+      category: req.body.category,
+      countInStock: req.body.countInStock,
+      rating: req.body.rating,
+      numReviews: req.body.numReviews,
+    },
+    {
+      new: true,
+    }
+  );
+  if (!prodcutItemUpdate) {
+    return res.json({ succes: false, message: "id is not found" });
+  }
+  res.status(200).json(prodcutItemUpdate);
+});
+
+Router.get("/get/count", async (_req, res) => {
   const productCount = await Product.estimatedDocumentCount();
   if (!productCount) {
     res.status(500).json({ success: false });
