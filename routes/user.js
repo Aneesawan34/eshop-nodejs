@@ -1,25 +1,58 @@
 const express = require("express");
-const { Users } = require("../models/user");
+const Users = require("../models/user");
+var mongoose = require("mongoose");
+var bcrypt = require("bcryptjs");
 
 const router = express.Router();
 
 router.get("/", async (req, res) => {
   const userList = await Users.find().select("-__v");
   if (!userList) {
-    res.send(500).json({ message: "something is wrong" });
+    return res.send(500).json({ message: "something is wrong" });
   }
   res.send(userList);
 });
 
-router.post("/", async (req, res) => {
+router.post("/login", async (req, res) => {
+  const user = await Users.findOne({ email: req.body.email });
+  if (user) {
+    if (bcrypt.compareSync(req.body.password, user.passwordHash)) {
+      return res.status(200).json(user);
+    }
+    return res.status(400).json({ message: "password is wrong" });
+  }
+  res.status(500).json({ message: "User not exist" });
+});
+
+router.post("/register", async (req, res) => {
   const user = new Users({
     name: req.body.name,
+    email: req.body.email,
+    passwordHash: bcrypt.hashSync(req.body.password, process.env.BCRYPT_HASH),
+    street: req.body.street,
+    appartment: req.body.appartment,
+    city: req.body.city,
+    zip: req.body.zip,
+    country: req.body.country,
+    phone: req.body.phone,
+    isAdmin: req.body.isAdmin,
   });
   const userAdd = await user.save();
   if (userAdd) {
-    res.json(userAdd);
+    return res.json(userAdd);
   }
   res.status(500).json({ message: "Some error" });
+});
+
+router.delete("/:id", async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(500).json({ message: "This id is not found" });
+  }
+  const deletedItem = await Users.findByIdAndDelete(req.params.id);
+  if (deletedItem) {
+    return res.json(deletedItem);
+  }
+  res.status(500).json({ message: "Not found" });
 });
 
 module.exports = router;

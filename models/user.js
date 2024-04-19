@@ -6,7 +6,50 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  date: { type: Date, default: Date.now },
+  email: {
+    type: String,
+    required: true,
+  },
+  passwordHash: {
+    type: String,
+    required: true,
+  },
+  street: {
+    type: String,
+    default: "",
+  },
+  appartment: {
+    type: String,
+    default: "",
+  },
+  city: {
+    type: String,
+    default: "",
+  },
+  zip: {
+    type: String,
+    default: "",
+  },
+  country: {
+    type: String,
+    default: "",
+  },
+  phone: {
+    type: String,
+    default: "",
+  },
+  isAdmin: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-exports.Users = mongoose.model("Users", UserSchema);
+UserSchema.virtual("id").get(function () {
+  return this._id.toHexString();
+});
+
+UserSchema.set("toJSON", {
+  virtuals: true,
+});
+
+module.exports = mongoose.model("Users", UserSchema);
