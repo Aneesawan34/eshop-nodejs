@@ -8,9 +8,20 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   const userList = await Users.find().select("-__v");
   if (!userList) {
-    return res.send(500).json({ message: "something is wrong" });
+    return res.send(500).json({ message: "something went wrong" });
   }
   res.send(userList);
+});
+
+router.get("/:id", async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(500).json({ message: "id is not found" });
+  }
+  const user = await Users.findById(req.params.id);
+  if (user) {
+    return res.send(user);
+  }
+  res.status(500).json({ message: "something went wrong" });
 });
 
 router.post("/login", async (req, res) => {
@@ -42,6 +53,32 @@ router.post("/register", async (req, res) => {
     return res.json(userAdd);
   }
   res.status(500).json({ message: "Some error" });
+});
+
+router.put("/:id", async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(500).json({ message: "id is not found" });
+  }
+  const userUpdate = await Users.findByIdAndUpdate(
+    req.params.id,
+    {
+      name: req.body.name,
+      street: req.body.street,
+      appartment: req.body.appartment,
+      city: req.body.city,
+      zip: req.body.zip,
+      country: req.body.country,
+      phone: req.body.phone,
+    },
+    {
+      new: true,
+    }
+  );
+
+  if (userUpdate) {
+    return res.json(userUpdate);
+  }
+  res.status(500).json({ message: "Something went wrong" });
 });
 
 router.delete("/:id", async (req, res) => {
