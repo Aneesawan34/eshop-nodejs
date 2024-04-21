@@ -6,17 +6,21 @@ const morgan = require("morgan");
 const UserRouter = require("./routes/user");
 const ProductRouter = require("./routes/product");
 const CategoryRouter = require("./routes/category");
+const authJwt = require("./helpers/jwt");
+const errorJwt = require("./helpers/errorJwtMiddleware.js");
+
 require("dotenv/config");
 
 // middle ware
 app.use(bodyparser.json());
 app.use(morgan("tiny"));
+app.use(authJwt());
+app.use(errorJwt);
 
 //Routing define
 app.use("/user", UserRouter);
 app.use("/product", ProductRouter);
 app.use("/category", CategoryRouter);
-
 databaseConect()
   .then(() => console.log("database connected"))
   .catch((err) => console.log(err));

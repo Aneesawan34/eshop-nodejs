@@ -60,7 +60,7 @@ Router.delete("/:id", async (req, res) => {
 
   const prodcutItem = await Product.findByIdAndDelete(req.params.id);
   if (!prodcutItem) {
-    res.status(400).json({ succes: false, message: "id is not found" });
+    return res.status(400).json({ succes: false, message: "id is not found" });
   }
   res
     .status(200)
@@ -110,6 +110,16 @@ Router.get("/get/count", async (_req, res) => {
     res.status(500).json({ success: false });
   }
   res.json({ count: productCount });
+});
+
+Router.get("/get/featured/:id", async (req, res) => {
+  const count = req.params.id ? req.params.id : 0;
+  const featuredList = await Product.find({ isFeatured: false }).limit(+count);
+
+  if (featuredList) {
+    return res.json(featuredList);
+  }
+  return res.status(500).json({ message: "something went wrong" });
 });
 
 module.exports = Router;

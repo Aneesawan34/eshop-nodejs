@@ -1,7 +1,8 @@
 const express = require("express");
 const Users = require("../models/user");
-var mongoose = require("mongoose");
-var bcrypt = require("bcryptjs");
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const router = express.Router();
 
@@ -26,9 +27,18 @@ router.get("/:id", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   const user = await Users.findOne({ email: req.body.email });
+  const SECRET = process.env.secret;
   if (user) {
     if (bcrypt.compareSync(req.body.password, user.passwordHash)) {
-      return res.status(200).json(user);
+      const token = jwt.sign(
+        {
+          userId: user.id,
+          isAdmin: user.isAdmin,
+        },
+        SECRET,
+        { expiresIn: "1d" }
+      );
+      return res.status(200).json({ token: token });
     }
     return res.status(400).json({ message: "password is wrong" });
   }
@@ -36,10 +46,14 @@ router.post("/login", async (req, res) => {
 });
 
 router.post("/register", async (req, res) => {
+  const existingUser = await Users.findOne({ email: req.body.email });
+  if (existingUser) {
+    return res.status(409).json({ message: "User is already exist" });
+  }
   const user = new Users({
     name: req.body.name,
     email: req.body.email,
-    passwordHash: bcrypt.hashSync(req.body.password, process.env.BCRYPT_HASH),
+    passwordHash: bcrypt.hashSync(req.body.password, +process.env.BCRYPT_HASH),
     street: req.body.street,
     appartment: req.body.appartment,
     city: req.body.city,
