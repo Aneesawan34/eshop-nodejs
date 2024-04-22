@@ -11,6 +11,8 @@ function authJwt() {
     path: [
       { url: /\/product(.*)/, methods: ["GET"] },
       { url: /\/category(.*)/, methods: ["GET"] },
+      { url: /\/order(.*)/, methods: ["GET", "POST", "DELETE", "PUT"] },
+      { url: /\/order-item(.*)/, methods: ["GET", "POST", "DELETE", "PUT"] },
       "/user/login",
       "/user/register",
     ],

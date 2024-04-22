@@ -6,6 +6,8 @@ const morgan = require("morgan");
 const UserRouter = require("./routes/user");
 const ProductRouter = require("./routes/product");
 const CategoryRouter = require("./routes/category");
+const OrderRouter = require("./routes/order");
+const OrderItemRouter = require("./routes/order-item");
 const authJwt = require("./helpers/jwt");
 const errorJwt = require("./helpers/errorJwtMiddleware.js");
 
@@ -21,6 +23,8 @@ app.use(errorJwt);
 app.use("/user", UserRouter);
 app.use("/product", ProductRouter);
 app.use("/category", CategoryRouter);
+app.use("/order", OrderRouter);
+app.use("/order-item", OrderItemRouter);
 databaseConect()
   .then(() => console.log("database connected"))
   .catch((err) => console.log(err));
