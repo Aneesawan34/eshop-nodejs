@@ -2,8 +2,23 @@ const express = require("express");
 const Product = require("../models/product");
 const Category = require("../models/category");
 var mongoose = require("mongoose");
+const multer = require("multer");
 
 const Router = express.Router();
+
+const IMAGE_MIME_TYPE = [""];
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "/public/upload");
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = file.originalname.replace(" ", "-");
+    cb(null, uniqueSuffix + date.now());
+  },
+});
+
+const upload = multer({ storage: storage });
 
 Router.get("/", async (req, res) => {
   const productList = await Product.find()
