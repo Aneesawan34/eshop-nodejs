@@ -18,6 +18,7 @@ app.use(bodyparser.json());
 app.use(morgan("tiny"));
 app.use(authJwt());
 app.use(errorJwt);
+app.use("/public/uploads", express.static(__dirname + "/public/uploads"));
 
 //Routing define
 app.use("/user", UserRouter);

@@ -6,15 +6,25 @@ const multer = require("multer");
 
 const Router = express.Router();
 
-const IMAGE_MIME_TYPE = [""];
+const FILE_TYPE_MAP = {
+  "image/png": "png",
+  "image/jpeg": "jpeg",
+  "image/jpg": "jpg",
+};
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "/public/upload");
+    const isValid = FILE_TYPE_MAP[file.mimetype];
+    let uploadError = new Error("pic is not validate");
+    if (isValid) {
+      uploadError = null;
+    }
+    cb(uploadError, "public/uploads");
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = file.originalname.replace(" ", "-");
-    cb(null, uniqueSuffix + date.now());
+    const extension = FILE_TYPE_MAP[file.mimetype];
+    cb(null, `${uniqueSuffix}-${Date.now()}.${extension}`);
   },
 });
 
@@ -41,7 +51,7 @@ Router.get("/:id", async (req, res) => {
   res.status(200).send(productItem);
 });
 
-Router.post("/", async (req, res) => {
+Router.post("/", upload.single("image"), async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(req.body.category)) {
     return res.status(400).json({ success: false, message: "Id is not valid" });
   }
@@ -50,10 +60,18 @@ Router.post("/", async (req, res) => {
     return res
       .status(400)
       .json({ success: false, message: "Category id not found" });
-
+  const file = req.file;
+  if (!file) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Image is missing" });
+  }
+  const fileName = req.file.filename;
+  const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
   const product = new Product({
     name: req.body.name,
     discription: req.body.discription,
+    image: `${basePath}${fileName}`,
     brand: req.body.brand,
     price: req.body.price,
     category: req.body.category,
@@ -137,4 +155,38 @@ Router.get("/get/featured/:id", async (req, res) => {
   return res.status(500).json({ message: "something went wrong" });
 });
 
+Router.put(
+  "/gallery-images/:id",
+  upload.array("images", 5),
+  async (req, res) => {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Id is not valid" });
+    }
+    const files = req.files;
+    if (!files) {
+      return res.status(400).json({ message: "Images is missing" });
+    }
+    const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
+    let imagesCollection = [];
+    files.map((image) => {
+      imagesCollection.push(`${basePath}${image.filename}`);
+    });
+
+    const prodcutImagesUpdate = await Product.findByIdAndUpdate(
+      req.params.id,
+      {
+        images: imagesCollection,
+      },
+      {
+        new: true,
+      }
+    );
+    if (!prodcutImagesUpdate) {
+      return res.json({ succes: false, message: "id is not found" });
+    }
+    res.status(200).json(prodcutImagesUpdate);
+  }
+);
 module.exports = Router;
